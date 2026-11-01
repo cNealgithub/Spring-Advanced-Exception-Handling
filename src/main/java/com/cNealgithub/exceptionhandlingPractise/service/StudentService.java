@@ -3,9 +3,9 @@ package com.cNealgithub.exceptionhandlingPractise.service;
 import com.cNealgithub.exceptionhandlingPractise.dto.StudentRequestDto;
 import com.cNealgithub.exceptionhandlingPractise.dto.StudentResponseDto;
 import com.cNealgithub.exceptionhandlingPractise.entity.Student;
+import com.cNealgithub.exceptionhandlingPractise.exceptions.DuplicateRecordException;
 import com.cNealgithub.exceptionhandlingPractise.exceptions.RecordNotFoundException;
 import com.cNealgithub.exceptionhandlingPractise.repository.StudentRepo;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -21,7 +21,12 @@ public class StudentService {
     private final StudentRepo studentRepo;
     private final ModelMapper modelMapper;
 
-    public StudentResponseDto createNewStudent(@Valid StudentRequestDto requestDto) {
+    public StudentResponseDto createNewStudent(StudentRequestDto requestDto) {
+        boolean alreadyExists= studentRepo.existsByEmail(requestDto.getEmail());
+        if(alreadyExists){
+            throw new DuplicateRecordException("User Already Exists by Email : " +
+                    requestDto.getEmail());
+        }
         Student newStudent = Student.builder()
                 .firstName(requestDto.getFirstName())
                 .lastName(requestDto.getLastName())
